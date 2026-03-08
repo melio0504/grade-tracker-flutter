@@ -1,0 +1,43 @@
+name: student_grade_tracker
+description: "Add subjects, scores; calculate average; dynamic progress display."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  provider: ^6.1.1
+  cupertino_icons: ^1.0.8
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  image_picker: ^1.0.4
+  intl: ^0.20.2
+  shared_preferences: ^2.2.2
+  google_sign_in: ^6.1.6
+  googleapis: ^11.4.0
+  extension_google_sign_in_as_googleapis_auth: ^2.0.12
+  http: ^1.1.0
+  firebase_core: ^4.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "lib/icon.png"
+  adaptive_icon_background: "#F6EFE1"
+  adaptive_icon_foreground: "lib/icon.png"
+
+flutter:
+  uses-material-design: true
+  generate: true
