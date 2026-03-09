@@ -13,6 +13,8 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   bool _agreedToTerms = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -22,13 +24,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _signup() async {
     final l10n = AppLocalizations.of(context)!;
-    if (!_agreedToTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.agreeToTermsError)),
-      );
-      return;
-    }
-
+    
     String fullName = _fullNameController.text.trim();
     String email = _emailController.text.trim();
     String password = _passwordController.text;
@@ -37,6 +33,13 @@ class _SignupScreenState extends State<SignupScreen> {
     if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.pleaseFillAllFields)),
+      );
+      return;
+    }
+
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.agreeToTermsError)),
       );
       return;
     }
@@ -193,9 +196,31 @@ class _SignupScreenState extends State<SignupScreen> {
                             const SizedBox(height: 20),
                             _buildTextField(hintText: l10n.email, controller: _emailController, isDark: isDark),
                             const SizedBox(height: 20),
-                            _buildTextField(hintText: l10n.password, isPassword: true, controller: _passwordController, isDark: isDark),
+                            _buildTextField(
+                              hintText: l10n.password,
+                              isPassword: true,
+                              obscureText: _obscurePassword,
+                              onToggleVisibility: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                              controller: _passwordController,
+                              isDark: isDark,
+                            ),
                             const SizedBox(height: 20),
-                            _buildTextField(hintText: l10n.confirmPassword, isPassword: true, controller: _confirmPasswordController, isDark: isDark),
+                            _buildTextField(
+                              hintText: l10n.confirmPassword,
+                              isPassword: true,
+                              obscureText: _obscureConfirmPassword,
+                              onToggleVisibility: () {
+                                setState(() {
+                                  _obscureConfirmPassword = !_obscureConfirmPassword;
+                                });
+                              },
+                              controller: _confirmPasswordController,
+                              isDark: isDark,
+                            ),
                             const SizedBox(height: 20),
                             // Terms and Conditions
                             Row(
@@ -296,7 +321,14 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildTextField({required String hintText, bool isPassword = false, required TextEditingController controller, required bool isDark}) {
+  Widget _buildTextField({
+    required String hintText,
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
+    required TextEditingController controller,
+    required bool isDark,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF333333) : Colors.white,
@@ -311,13 +343,22 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: isPassword ? obscureText : false,
         style: TextStyle(fontSize: 18, color: isDark ? Colors.white : Colors.black87),
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 17),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility_off : Icons.visibility,
+                    color: isDark ? Colors.white70 : Colors.grey[600],
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
         ),
       ),
     );
