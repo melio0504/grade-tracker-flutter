@@ -1,5 +1,9 @@
 # Student Grade Tracker
 
+<p align="center">
+  <img src="home-page-with-data.jpg" width="300" height="600">
+</p>
+
 A comprehensive Flutter application designed to help students manage their academic performance by tracking subjects, grades, and activities.
 
 ## Description
@@ -33,9 +37,6 @@ Student Grade Tracker is a personal academic assistant that allows students to k
   - Image Picker (Profile & Subject images)
   - Intl (Formatting and Localization)
   - HTTP (API requests)
-
-## Screenshot
-![Screenshot](./home-page-with-data.jpg)
 
 ## Getting Started
 
