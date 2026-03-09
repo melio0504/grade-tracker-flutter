@@ -4,7 +4,6 @@ import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sig
 import 'database_helper.dart';
 
 class GoogleClassroomService {
-  // Use the Web Client ID from your google-services.json or Google Cloud Console.
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     serverClientId: '756388512754-9uojlb6hrefoilvk34jt5pqdlf67grhl.apps.googleusercontent.com',
     scopes: [
@@ -16,15 +15,23 @@ class GoogleClassroomService {
     ],
   );
 
-  static Future<GoogleSignInAccount?> signIn() async {
+  /// Signs in the user. 
+  /// If [forceAccountPicker] is true, it signs out first and skips silent sign-in to force the Google OAuth account picker.
+  static Future<GoogleSignInAccount?> signIn({bool forceAccountPicker = false}) async {
     try {
-      print('Google Sign-In: Starting sign-in process...');
+      print('Google Sign-In: Starting sign-in process (forcePicker: $forceAccountPicker)...');
+
+      if (forceAccountPicker) {
+        await _googleSignIn.signOut();
+        // Skip silent sign-in to ensure the account picker shows up
+        return await _googleSignIn.signIn();
+      }
       
-      // Try to sign in silently first if the user has already granted access
+      // Try to sign in silently first
       var account = await _googleSignIn.signInSilently();
       
       if (account == null) {
-        // If silent sign-in fails, prompt the user to choose an account
+        // If silent sign-in fails, prompt the user
         account = await _googleSignIn.signIn();
       }
       
@@ -41,6 +48,10 @@ class GoogleClassroomService {
       print('---------------------------');
       rethrow;
     }
+  }
+
+  static Future<void> signOut() async {
+    await _googleSignIn.signOut();
   }
 
   static Future<void> syncClassroomData(int userId) async {
@@ -66,7 +77,6 @@ class GoogleClassroomService {
         return;
       }
 
-      // Optimization: Fetch existing subjects once
       final existingSubjects = await dbHelper.getSubjects(userId);
 
       for (var course in courses) {
@@ -104,23 +114,19 @@ class GoogleClassroomService {
           // Fetch all student submissions for this user in this course
           final submissionsResponse = await classroomApi.courses.courseWork.studentSubmissions.list(
             course.id!,
-            '-', // All coursework items
+            '-',
             userId: 'me',
           );
           final submissions = submissionsResponse.studentSubmissions ?? [];
           
-          // Map courseworkId -> submission for easy lookup
           final submissionMap = {for (var s in submissions) s.courseWorkId: s};
 
-          // Optimization: Fetch existing activities for this subject once
           final existingActivities = await dbHelper.getActivities(subjectId);
           final existingActivityMap = {for (var a in existingActivities) a['name'] as String: a};
 
           for (var work in coursework) {
             if (work.id == null || work.title == null) continue;
-            
-            // Filter: Only sync "Assignments" as requested
-            // We can also include Questions if they are considered "assignments" by the user
+
             if (work.workType != 'ASSIGNMENT' && 
                 work.workType != 'SHORT_ANSWER_QUESTION' && 
                 work.workType != 'MULTIPLE_CHOICE_QUESTION') {
@@ -132,17 +138,13 @@ class GoogleClassroomService {
               type = 'Assignment';
             }
 
-            // Get submission info
             final submission = submissionMap[work.id];
             double grade = 0.0;
             int isCompleted = 0;
 
             if (submission != null) {
-              // assignedGrade is the final grade returned to the student
               grade = submission.assignedGrade ?? 0.0;
-              
-              // Map states to isCompleted
-              // Possible states: NEW, CREATED, TURNED_IN, RETURNED, RECLAIMED_BY_STUDENT
+
               if (submission.state == 'TURNED_IN' || submission.state == 'RETURNED') {
                 isCompleted = 1;
               }
@@ -162,8 +164,7 @@ class GoogleClassroomService {
 
             final existing = existingActivityMap[work.title];
             if (existing != null) {
-              // Update if changed (Syncing updates)
-              if (existing['grade'] != grade || 
+              if (existing['grade'] != grade ||
                   existing['isCompleted'] != isCompleted ||
                   existing['dueDate'] != activityData['dueDate']) {
                 await dbHelper.updateActivity(existing['id'], activityData);
@@ -176,7 +177,6 @@ class GoogleClassroomService {
           }
         } catch (e) {
           print('Error syncing coursework for course ${course.name}: $e');
-          // Continue to next course even if one fails
         }
       }
       print('Google Classroom: Sync completed.');
