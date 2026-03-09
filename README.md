@@ -2,6 +2,7 @@
 
 ## Video Demonstration
 
+https://github.com/user-attachments/assets/7cc20d42-7e3e-4b7d-9ccb-fc01e0e0acdf
 
 A comprehensive Flutter application designed to help students manage their academic performance by tracking subjects, grades, and activities.
 
