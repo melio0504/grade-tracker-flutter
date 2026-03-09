@@ -18,6 +18,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
   final _dbHelper = DatabaseHelper();
 
   void _login() async {
@@ -52,7 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleGoogleSignIn() async {
     try {
-      final account = await GoogleClassroomService.signIn();
+      // Force account picker by passing forceAccountPicker: true
+      final account = await GoogleClassroomService.signIn(forceAccountPicker: true);
       if (account == null) return;
 
       // Check if user exists in DB
@@ -66,21 +68,22 @@ class _LoginScreenState extends State<LoginScreen> {
           'google_auth_placeholder', // Placeholder password for Google users
         );
         
-        if (account.photoUrl != null) {
-          await _dbHelper.updateProfileImage(userId, account.photoUrl!);
-        }
-        
         // Fetch the newly created user
         user = await _dbHelper.getUserByEmail(account.email);
       }
 
       if (user != null) {
+        if (account.photoUrl != null) {
+          await _dbHelper.updateProfileImage(user['id'], account.photoUrl!);
+
+          user = await _dbHelper.getUserByEmail(account.email);
+        }
+
         _dbHelper.currentUser = user;
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('userId', user['id']);
+        await prefs.setInt('userId', user!['id']);
 
         if (mounted) {
-          // Show loading while syncing
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -258,7 +261,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 _buildTextField(hintText: l10n.email, controller: _emailController, isDark: isDark),
                                 const SizedBox(height: 25),
-                                _buildTextField(hintText: l10n.password, isPassword: true, controller: _passwordController, isDark: isDark),
+                                _buildTextField(
+                                  hintText: l10n.password,
+                                  isPassword: true,
+                                  obscureText: _obscurePassword,
+                                  onToggleVisibility: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                  controller: _passwordController,
+                                  isDark: isDark,
+                                ),
                                 const SizedBox(height: 35),
                                 SizedBox(
                                   width: double.infinity,
@@ -345,7 +359,14 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField({required String hintText, bool isPassword = false, required TextEditingController controller, required bool isDark}) {
+  Widget _buildTextField({
+    required String hintText,
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
+    required TextEditingController controller,
+    required bool isDark,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF333333) : Colors.white,
@@ -360,13 +381,22 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: isPassword ? obscureText : false,
         style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility_off : Icons.visibility,
+                    color: isDark ? Colors.white70 : Colors.grey[600],
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
         ),
       ),
     );
