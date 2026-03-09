@@ -20,16 +20,12 @@ class SettingScreen extends StatefulWidget {
 class _SettingScreenState extends State<SettingScreen> {
   final _dbHelper = DatabaseHelper();
   Map<String, dynamic>? _user;
-  File? _image;
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     _user = _dbHelper.currentUser;
-    if (_user != null && _user!['profileImage'] != null) {
-      _image = File(_user!['profileImage']);
-    }
   }
 
   Future<void> _pickImage() async {
@@ -37,9 +33,6 @@ class _SettingScreenState extends State<SettingScreen> {
         await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
       if (_user != null) {
         await _dbHelper.updateProfileImage(_user!['id'], pickedFile.path);
         setState(() {
@@ -65,6 +58,14 @@ class _SettingScreenState extends State<SettingScreen> {
       if (mounted) Navigator.pop(context); // Close loading
 
       if (account != null) {
+        // Update profile image if available
+        if (account.photoUrl != null) {
+          await _dbHelper.updateProfileImage(_user!['id'], account.photoUrl!);
+          setState(() {
+            _user = _dbHelper.currentUser;
+          });
+        }
+
         // Show second loading for data sync
         showDialog(
           context: context,
@@ -81,7 +82,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     "Syncing Classroom Data...",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14, // Fixed "so big" text
+                      fontSize: 14,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
@@ -342,6 +343,7 @@ class _SettingScreenState extends State<SettingScreen> {
   Widget _buildProfileSection(bool isDark) {
     String email = _user?['email'] ?? 'No email';
     String username = _user?['username'] ?? 'User Name';
+    String? profileImage = _user?['profileImage'];
 
     String formattedId = "N/A";
     if (_user != null) {
@@ -349,6 +351,18 @@ class _SettingScreenState extends State<SettingScreen> {
       final random = Random(seed);
       final randomNum = 10000 + random.nextInt(90000); // 5-digit random number
       formattedId = "${DateTime.now().year}-$randomNum";
+    }
+
+    ImageProvider? imageProvider;
+    if (profileImage != null && profileImage.isNotEmpty) {
+      if (profileImage.startsWith('http')) {
+        imageProvider = NetworkImage(profileImage);
+      } else {
+        File file = File(profileImage);
+        if (file.existsSync()) {
+          imageProvider = FileImage(file);
+        }
+      }
     }
 
     return Column(
@@ -367,10 +381,8 @@ class _SettingScreenState extends State<SettingScreen> {
                 child: CircleAvatar(
                   radius: 60,
                   backgroundColor: const Color(0xFFBDC3C7),
-                  backgroundImage: (_image != null && _image!.existsSync())
-                      ? FileImage(_image!)
-                      : null,
-                  child: (_image == null || !_image!.existsSync())
+                  backgroundImage: imageProvider,
+                  child: imageProvider == null
                       ? const Icon(
                           Icons.person,
                           size: 90,
