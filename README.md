@@ -1,8 +1,7 @@
 # Student Grade Tracker
 
-<p align="center">
-  <img src="home-page-with-data.jpg" width="300" height="600">
-</p>
+## Video Demonstration
+
 
 A comprehensive Flutter application designed to help students manage their academic performance by tracking subjects, grades, and activities.
 
