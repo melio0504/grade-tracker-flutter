@@ -24,6 +24,7 @@ dependencies:
   extension_google_sign_in_as_googleapis_auth: ^2.0.12
   http: ^1.1.0
   firebase_core: ^4.5.0
+  crypt: ^4.3.1
 
 dev_dependencies:
   flutter_test:

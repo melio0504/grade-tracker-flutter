@@ -1,3 +1,4 @@
+import 'package:crypt/crypt.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -111,26 +112,38 @@ class DatabaseHelper {
     }
   }
 
+  String _hashPassword(String password) {
+    return Crypt.sha256(password).toString();
+  }
+
   Future<int> registerUser(String username, String email, String password) async {
     final db = await database;
     return await db.insert('users', {
       'username': username,
       'email': email,
-      'password': password,
+      'password': _hashPassword(password),
     });
   }
 
   Future<Map<String, dynamic>?> loginUser(String email, String password) async {
     final db = await database;
+    
     List<Map<String, dynamic>> results = await db.query(
       'users',
-      where: 'email = ? AND password = ?',
-      whereArgs: [email, password],
+      where: 'email = ?',
+      whereArgs: [email],
     );
+
     if (results.isNotEmpty) {
-      currentUser = results.first;
-      await _saveUserSession(currentUser!['id']);
-      return results.first;
+      final user = results.first;
+      final storedHash = user['password'] as String;
+      
+      // Verify password
+      if (Crypt(storedHash).match(password)) {
+        currentUser = user;
+        await _saveUserSession(currentUser!['id']);
+        return user;
+      }
     }
     return null;
   }
