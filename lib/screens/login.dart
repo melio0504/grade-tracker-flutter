@@ -61,11 +61,22 @@ class _LoginScreenState extends State<LoginScreen> {
       var user = await _dbHelper.getUserByEmail(account.email);
 
       if (user == null) {
+        // Try to split name into first and last
+        String displayName = account.displayName ?? 'Google User';
+        List<String> nameParts = displayName.split(' ');
+        String firstName = nameParts.isNotEmpty ? nameParts[0] : 'Google';
+        String lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : 'User';
+
         // Create new account automatically
-        int userId = await _dbHelper.registerUser(
-          account.displayName ?? 'Google User',
-          account.email,
-          'google_auth_placeholder', // Placeholder password for Google users
+        await _dbHelper.registerUser(
+          firstName: firstName,
+          middleName: '',
+          lastName: lastName,
+          studentId: 'G-${account.email.hashCode.abs()}', // Placeholder ID
+          gradeLevel: 'N/A',
+          section: 'Google',
+          email: account.email,
+          password: 'google_auth_placeholder_${account.id}', // Placeholder password
         );
         
         // Fetch the newly created user
@@ -359,6 +370,79 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Widget _buildNotebookSection(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: isDark ? Colors.white24 : Colors.black12,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Text(
+                  'OR CONNECT WITH',
+                  style: TextStyle(
+                    color: isDark ? Colors.white38 : Colors.black38,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: isDark ? Colors.white24 : Colors.black12,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: _handleGoogleSignIn,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF333333) : Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png',
+                    height: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Google',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTextField({
     required String hintText,
     bool isPassword = false,
@@ -414,76 +498,6 @@ class _LoginScreenState extends State<LoginScreen> {
           fontWeight: FontWeight.w500,
         ),
       ),
-    );
-  }
-
-  Widget _buildNotebookSection(bool isDark) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(10, (index) {
-              return Container(
-                width: 12,
-                height: 25,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[300] : Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.grey[400]!, width: 1),
-                ),
-              );
-            }),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 15),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF333333) : Colors.white,
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(25),
-              bottomRight: Radius.circular(25),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: InkWell(
-              onTap: _handleGoogleSignIn,
-              child: Container(
-                height: 180,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3F78A8),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Center(
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Image.network(
-                      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/250px-Google_%22G%22_logo.svg.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

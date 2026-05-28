@@ -15,24 +15,52 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _agreedToTerms = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  final TextEditingController _fullNameController = TextEditingController();
+
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _middleNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _studentIdController = TextEditingController();
+  final TextEditingController _gradeLevelController = TextEditingController();
+  final TextEditingController _sectionController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   final _dbHelper = DatabaseHelper();
 
+  bool _isPasswordStrong(String password) {
+    if (password.length < 16) return false;
+    if (!password.contains(RegExp(r'[A-Z]'))) return false;
+    if (!password.contains(RegExp(r'[a-z]'))) return false;
+    if (!password.contains(RegExp(r'[0-9]'))) return false;
+    if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return false;
+    return true;
+  }
+
   void _signup() async {
     final l10n = AppLocalizations.of(context)!;
     
-    String fullName = _fullNameController.text.trim();
+    String firstName = _firstNameController.text.trim();
+    String middleName = _middleNameController.text.trim();
+    String lastName = _lastNameController.text.trim();
+    String studentId = _studentIdController.text.trim();
+    String gradeLevel = _gradeLevelController.text.trim();
+    String section = _sectionController.text.trim();
     String email = _emailController.text.trim();
     String password = _passwordController.text;
     String confirmPassword = _confirmPasswordController.text;
 
-    if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
+    if (firstName.isEmpty || lastName.isEmpty || email.isEmpty || password.isEmpty || 
+        studentId.isEmpty || gradeLevel.isEmpty || section.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.pleaseFillAllFields)),
+      );
+      return;
+    }
+
+    if (!_isPasswordStrong(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.passwordTooWeak)),
       );
       return;
     }
@@ -52,7 +80,16 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     try {
-      await _dbHelper.registerUser(fullName, email, password);
+      await _dbHelper.registerUser(
+        firstName: firstName,
+        middleName: middleName,
+        lastName: lastName,
+        studentId: studentId,
+        gradeLevel: gradeLevel,
+        section: section,
+        email: email,
+        password: password,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.registrationSuccessful)),
@@ -191,11 +228,26 @@ class _SignupScreenState extends State<SignupScreen> {
                         child: Column(
                           children: [
                             const SizedBox(height: 60),
-                            // Name field
-                            _buildTextField(hintText: l10n.fullName, controller: _fullNameController, isDark: isDark),
-                            const SizedBox(height: 20),
+                            // Name fields
+                            _buildTextField(hintText: l10n.firstName, controller: _firstNameController, isDark: isDark),
+                            const SizedBox(height: 15),
+                            _buildTextField(hintText: l10n.middleName, controller: _middleNameController, isDark: isDark),
+                            const SizedBox(height: 15),
+                            _buildTextField(hintText: l10n.lastName, controller: _lastNameController, isDark: isDark),
+                            const SizedBox(height: 15),
+                            // Student Info
+                            _buildTextField(hintText: l10n.studentId, controller: _studentIdController, isDark: isDark),
+                            const SizedBox(height: 15),
+                            Row(
+                              children: [
+                                Expanded(child: _buildTextField(hintText: l10n.gradeLevel, controller: _gradeLevelController, isDark: isDark)),
+                                const SizedBox(width: 15),
+                                Expanded(child: _buildTextField(hintText: l10n.section, controller: _sectionController, isDark: isDark)),
+                              ],
+                            ),
+                            const SizedBox(height: 15),
                             _buildTextField(hintText: l10n.email, controller: _emailController, isDark: isDark),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 15),
                             _buildTextField(
                               hintText: l10n.password,
                               isPassword: true,
@@ -208,7 +260,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               controller: _passwordController,
                               isDark: isDark,
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 15),
                             _buildTextField(
                               hintText: l10n.confirmPassword,
                               isPassword: true,
@@ -349,7 +401,7 @@ class _SignupScreenState extends State<SignupScreen> {
           hintText: hintText,
           hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 17),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(

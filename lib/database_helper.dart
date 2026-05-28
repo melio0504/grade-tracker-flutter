@@ -6,8 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
-  
-  // Store the current logged in user
+
   Map<String, dynamic>? currentUser;
 
   factory DatabaseHelper() => _instance;
@@ -24,7 +23,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'student_grade_tracker.db');
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -35,6 +34,12 @@ class DatabaseHelper {
       CREATE TABLE users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT,
+        firstName TEXT,
+        middleName TEXT,
+        lastName TEXT,
+        studentId TEXT,
+        gradeLevel TEXT,
+        section TEXT,
         email TEXT UNIQUE,
         password TEXT,
         profileImage TEXT
@@ -110,18 +115,41 @@ class DatabaseHelper {
     if (oldVersion < 6) {
       await db.execute('ALTER TABLE activities ADD COLUMN type TEXT');
     }
+    if (oldVersion < 7) {
+      await db.execute('ALTER TABLE users ADD COLUMN firstName TEXT');
+      await db.execute('ALTER TABLE users ADD COLUMN middleName TEXT');
+      await db.execute('ALTER TABLE users ADD COLUMN lastName TEXT');
+      await db.execute('ALTER TABLE users ADD COLUMN studentId TEXT');
+      await db.execute('ALTER TABLE users ADD COLUMN gradeLevel TEXT');
+      await db.execute('ALTER TABLE users ADD COLUMN section TEXT');
+    }
   }
 
   String _hashPassword(String password) {
     return Crypt.sha256(password).toString();
   }
 
-  Future<int> registerUser(String username, String email, String password) async {
+  Future<int> registerUser({
+    required String firstName,
+    required String middleName,
+    required String lastName,
+    required String studentId,
+    required String gradeLevel,
+    required String section,
+    required String email,
+    required String password,
+  }) async {
     final db = await database;
     return await db.insert('users', {
-      'username': username,
+      'firstName': firstName,
+      'middleName': middleName,
+      'lastName': lastName,
+      'studentId': studentId,
+      'gradeLevel': gradeLevel,
+      'section': section,
       'email': email,
       'password': _hashPassword(password),
+      'username': '$firstName $lastName', // Keep username for backward compatibility
     });
   }
 
@@ -138,7 +166,6 @@ class DatabaseHelper {
       final user = results.first;
       final storedHash = user['password'] as String;
       
-      // Verify password
       if (Crypt(storedHash).match(password)) {
         currentUser = user;
         await _saveUserSession(currentUser!['id']);
@@ -195,7 +222,7 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [userId],
     );
-    // Refresh currentUser with new data
+
     if (currentUser != null && currentUser!['id'] == userId) {
       List<Map<String, dynamic>> results = await db.query(
         'users',
@@ -228,7 +255,6 @@ class DatabaseHelper {
     return await db.delete('subjects', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Activities methods
   Future<List<Map<String, dynamic>>> getActivities(int subjectId) async {
     final db = await database;
     return await db.query('activities', where: 'subjectId = ?', whereArgs: [subjectId]);
@@ -260,7 +286,7 @@ class DatabaseHelper {
 
   Future<int> deleteUser(int userId) async {
     final db = await database;
-    // Delete subjects first (activities will cascade if subjects are deleted)
+
     await db.delete('subjects', where: 'userId = ?', whereArgs: [userId]);
     return await db.delete('users', where: 'id = ?', whereArgs: [userId]);
   }

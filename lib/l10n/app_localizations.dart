@@ -222,6 +222,48 @@ abstract class AppLocalizations {
   /// **'Full Name'**
   String get fullName;
 
+  /// No description provided for @firstName.
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get firstName;
+
+  /// No description provided for @middleName.
+  ///
+  /// In en, this message translates to:
+  /// **'Middle Name'**
+  String get middleName;
+
+  /// No description provided for @lastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get lastName;
+
+  /// No description provided for @studentId.
+  ///
+  /// In en, this message translates to:
+  /// **'Student ID'**
+  String get studentId;
+
+  /// No description provided for @gradeLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade/Year Level'**
+  String get gradeLevel;
+
+  /// No description provided for @section.
+  ///
+  /// In en, this message translates to:
+  /// **'Section'**
+  String get section;
+
+  /// No description provided for @passwordTooWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 16 characters long and include uppercase, lowercase, numbers, and symbols.'**
+  String get passwordTooWeak;
+
   /// No description provided for @confirmPassword.
   ///
   /// In en, this message translates to:

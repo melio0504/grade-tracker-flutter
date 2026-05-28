@@ -70,6 +70,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fullName => '성명';
 
   @override
+  String get firstName => 'First Name';
+
+  @override
+  String get middleName => 'Middle Name';
+
+  @override
+  String get lastName => 'Last Name';
+
+  @override
+  String get studentId => 'Student ID';
+
+  @override
+  String get gradeLevel => 'Grade/Year Level';
+
+  @override
+  String get section => 'Section';
+
+  @override
+  String get passwordTooWeak =>
+      'Password must be at least 16 characters long and include uppercase, lowercase, numbers, and symbols.';
+
+  @override
   String get confirmPassword => '비밀번호 확인';
 
   @override
