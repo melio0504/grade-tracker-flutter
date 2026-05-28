@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:student_grade_tracker/l10n/app_localizations.dart';
@@ -6,6 +7,7 @@ import 'package:student_grade_tracker/settings_provider.dart';
 import 'package:student_grade_tracker/google_classroom_service.dart';
 import 'signup.dart';
 import 'home.dart';
+import 'admin_dashboard.dart';
 import '../database_helper.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -49,6 +51,42 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     }
+  }
+
+  void _adminLogin() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final adminPasswordController = TextEditingController();
+        return AlertDialog(
+          title: const Text("Admin Access"),
+          content: TextField(
+            controller: adminPasswordController,
+            obscureText: true,
+            decoration: const InputDecoration(hintText: "Enter Admin Password"),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+            ElevatedButton(
+              onPressed: () {
+                if (adminPasswordController.text == "admin123") {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminDashboard()),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Invalid Admin Password")),
+                  );
+                }
+              },
+              child: const Text("Login"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _handleGoogleSignIn() async {
@@ -361,6 +399,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _adminLogin,
+                  icon: const Icon(Icons.admin_panel_settings, color: Colors.white),
+                  label: const Text(
+                    "Admin Login",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark ? const Color(0xFF424242) : const Color(0xFF8B5E3C),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                ),
                 const SizedBox(height: 40),
               ],
             ),
@@ -421,8 +478,8 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png',
+                  SvgPicture.asset(
+                    'assets/images/google_logo.svg',
                     height: 24,
                   ),
                   const SizedBox(width: 12),

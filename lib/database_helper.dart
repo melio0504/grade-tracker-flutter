@@ -147,7 +147,7 @@ class DatabaseHelper {
       'studentId': studentId,
       'gradeLevel': gradeLevel,
       'section': section,
-      'email': email,
+      'email': email.toLowerCase().trim(),
       'password': _hashPassword(password),
       'username': '$firstName $lastName', // Keep username for backward compatibility
     });
@@ -159,7 +159,7 @@ class DatabaseHelper {
     List<Map<String, dynamic>> results = await db.query(
       'users',
       where: 'email = ?',
-      whereArgs: [email],
+      whereArgs: [email.toLowerCase().trim()],
     );
 
     if (results.isNotEmpty) {
@@ -180,9 +180,33 @@ class DatabaseHelper {
     List<Map<String, dynamic>> results = await db.query(
       'users',
       where: 'email = ?',
-      whereArgs: [email],
+      whereArgs: [email.toLowerCase().trim()],
     );
     return results.isNotEmpty ? results.first : null;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    final db = await database;
+    return await db.query('users');
+  }
+
+  Future<int> updateUser(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    
+    // Create a copy of the data to avoid modifying the original map
+    Map<String, dynamic> updatedData = Map.from(data);
+    
+    // If password is being updated, hash it
+    if (updatedData.containsKey('password')) {
+      updatedData['password'] = _hashPassword(updatedData['password']);
+    }
+    
+    // If email is being updated, normalize it
+    if (updatedData.containsKey('email')) {
+      updatedData['email'] = updatedData['email'].toString().toLowerCase().trim();
+    }
+    
+    return await db.update('users', updatedData, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> _saveUserSession(int userId) async {

@@ -25,6 +25,7 @@ dependencies:
   http: ^1.1.0
   firebase_core: ^4.5.0
   crypt: ^4.3.1
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -42,3 +43,5 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/images/google_logo.svg
