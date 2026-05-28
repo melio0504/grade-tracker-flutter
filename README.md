@@ -13,6 +13,9 @@ Student Grade Tracker is a personal academic assistant that allows students to k
 ## Features
 
 - **User Authentication**: Secure signup and login system with auto-login capabilities.
+- **Admin Dashboard**: Specialized interface for administrative tasks.
+  - **User Management**: Create, edit, and delete user accounts.
+  - **Data Oversight**: View and manage subjects and academic records for all registered students.
 - **Subject Management**: Create, update, and delete subjects with custom names and images.
 - **Grade Calculation**: Automatically calculates overall grades based on weighted assessments, assignments, and activities.
 - **Activity Tracking**: Manage tasks and activities for each subject, including due dates and completion status.
