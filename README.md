@@ -2,7 +2,7 @@
 
 ## Video Demonstration
 
-https://github.com/user-attachments/assets/7cc20d42-7e3e-4b7d-9ccb-fc01e0e0acdf
+<https://github.com/user-attachments/assets/58d24c91-9b1e-4c62-8265-176dbdca2664>
 
 A comprehensive Flutter application designed to help students manage their academic performance by tracking subjects, grades, and activities.
 
@@ -29,7 +29,7 @@ Student Grade Tracker is a personal academic assistant that allows students to k
 - **State Management**: Provider
 - **Database**: SQFlite (SQLite for Flutter)
 - **Local Storage**: Shared Preferences
-- **Authentication & APIs**: 
+- **Authentication & APIs**:
   - Google Sign-In
   - Google Classroom API
   - Firebase Core
@@ -40,18 +40,24 @@ Student Grade Tracker is a personal academic assistant that allows students to k
 
 ## Getting Started
 
-1.  **Clone the repository**
+1. **Clone the repository**
+
     ```bash
     git clone https://github.com/melio0504/grade-tracker-flutter.git
     ```
-2.  **Install dependencies**
+
+2. **Install dependencies**
+
     ```bash
     flutter pub get
     ```
-3.  **Run the app**
+
+3. **Run the app**
+
     ```bash
     flutter run
     ```
 
 ---
-*Developed with ❤️ using Flutter*
+
+_Developed with ❤️ using Flutter_
